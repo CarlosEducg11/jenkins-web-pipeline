@@ -3,6 +3,7 @@ version: "3.9"
 services:
   python-generator:
     image: educg11/python-generator:latest
+    user: root
     volumes:
       - ./data:/data
     command: ["python", "script.py"]
@@ -26,11 +27,10 @@ services:
     depends_on:
       - r-cleaner
 
-    # Git service for Jenkins to pull the repo
   git-clone:
-    image: alpine/git  # Use the Git image from Docker Hub
+    image: alpine/git 
     volumes:
-      - ./PI:/repo  # Mount the repo in a folder
+      - ./PI:/repo  
     command: ["git", "clone", "https://github.com/CarlosEducg11/jenkins-web-pipeline.git", "/repo"]
     depends_on:
       - python-generator
