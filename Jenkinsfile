@@ -75,10 +75,4 @@ pipeline {
             }
         }
     }
-
-    post {
-        always {
-            sh 'docker-compose down --volumes --remove-orphans'
-        }
-    }
 }
