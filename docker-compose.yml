@@ -3,7 +3,6 @@ version: "3.9"
 services:
   python-generator:
     image: educg11/python-generator:latest
-    user: root
     volumes:
       - ./data:/data
     command: ["python", "script.py"]
