@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  python-generator:
+    image: educg11/python-generator:latest
+    volumes:
+      - ./data:/data
+    command: ["python", "script.py"]
+
+  r-cleaner:
+    image: educg11/r-cleaner:latest
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - python-generator
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: 'admin'
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/var/lib/grafana/dashboards
+    depends_on:
+      - r-cleaner
+
+    # Git service for Jenkins to pull the repo
+  git-clone:
+    image: alpine/git  # Use the Git image from Docker Hub
+    volumes:
+      - ./PI:/repo  # Mount the repo in a folder
+    command: ["git", "clone", "https://github.com/CarlosEducg11/jenkins-web-pipeline.git", "/repo"]
+    depends_on:
+      - python-generator
