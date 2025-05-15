@@ -3,6 +3,7 @@ version: '3.8'
 services:
   jenkins:
     build: .
+    entrypoint: ["/entrypoint.sh"]
     ports:
       - "8080:8080"
       - "50000:50000"
