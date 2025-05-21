@@ -47,22 +47,6 @@ pipeline {
             }
         }
 
-        stage('Generate Data (Python)') {
-            steps {
-                dir('python-generator') {
-                    sh 'docker-compose exec -T python-generator python3 generate_csv.py'
-                }
-            }
-        }
-
-        stage('Clean Data (R)') {
-            steps {
-                dir('r-cleaner') {
-                    sh 'docker-compose exec -T r-cleaner Rscript dadosAlagamento.R'
-                }
-            }
-        }
-
         stage('Stop Containers') {
             steps {
                 sh 'docker-compose down'
