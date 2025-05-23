@@ -14,5 +14,3 @@ RUN groupdel docker || true \
     && usermod -aG docker jenkins \
     && id jenkins \
     && getent group docker
-
-USER jenkins
