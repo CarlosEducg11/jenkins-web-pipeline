@@ -11,3 +11,5 @@ RUN if ! getent group docker; then groupadd -g ${DOCKER_GID} docker; fi \
     && usermod -aG docker jenkins
 
 USER jenkins
+
+RUN whoami && id && groups
