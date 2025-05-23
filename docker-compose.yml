@@ -27,9 +27,12 @@ services:
       - r-cleaner
 
   git-clone:
-    image: alpine/git 
+    image: alpine/git
     volumes:
-      - ./PI:/repo  
+      - ./PI:/repo
     command: ["git", "clone", "https://github.com/CarlosEducg11/jenkins-web-pipeline.git", "/repo"]
     depends_on:
       - python-generator
+
+volumes:
+  jenkins_home:

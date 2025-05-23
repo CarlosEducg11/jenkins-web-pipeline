@@ -2,14 +2,15 @@ FROM jenkins/jenkins:lts
 
 USER root
 
-ARG DOCKER_GID=1001
+ARG DOCKER_GID=965
 
+# Install Docker CLI & Compose
 RUN apt-get update && apt-get install -y docker.io docker-compose
 
-# Create docker group with host's docker GID (or fallback if group exists)
-RUN if ! getent group docker; then groupadd -g ${DOCKER_GID} docker; fi \
-    && usermod -aG docker jenkins
+ARG DOCKER_GID=965
 
-USER jenkins
-
-RUN whoami && id && groups
+RUN groupdel docker || true \
+    && groupadd -g ${DOCKER_GID} docker \
+    && usermod -aG docker jenkins \
+    && id jenkins \
+    && getent group docker
