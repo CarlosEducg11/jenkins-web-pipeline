@@ -7,11 +7,12 @@ ARG DOCKER_GID=965
 # Install Docker CLI & Compose
 RUN apt-get update && apt-get install -y docker.io docker-compose
 
-# Create group if not exists with correct GID, then add jenkins user
-RUN groupadd -forg ${DOCKER_GID} docker \
-    && usermod -aG docker jenkins
+ARG DOCKER_GID=965
 
-# Show current groups for verification (for logs)
-RUN id jenkins
+RUN groupdel docker || true \
+    && groupadd -g ${DOCKER_GID} docker \
+    && usermod -aG docker jenkins \
+    && id jenkins \
+    && getent group docker
 
 USER jenkins
