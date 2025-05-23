@@ -34,21 +34,5 @@ services:
     depends_on:
       - python-generator
 
-  jenkins:
-    image: custom-jenkins:latest  # or jenkins/jenkins:lts if you don’t build a custom image
-    container_name: jenkins
-    ports:
-      - "8080:8080"
-      - "50000:50000"
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/bin/docker:/usr/bin/docker
-    group_add:
-      - ${DOCKER_GID}  # Docker group ID passed via environment variable
-    environment:
-      - DOCKER_GID=965  # Replace 103 with the actual GID of your docker socket group on host
-    restart: unless-stopped
-
 volumes:
   jenkins_home:
