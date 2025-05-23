@@ -2,12 +2,9 @@ FROM jenkins/jenkins:lts
 
 USER root
 
-ARG DOCKER_GID=1001
-
-# Install Docker CLI & Compose
 RUN apt-get update && apt-get install -y docker.io docker-compose
 
-ARG DOCKER_GID=965
+ARG DOCKER_GID=1001
 
 RUN groupdel docker || true \
     && groupadd -g ${DOCKER_GID} docker \
