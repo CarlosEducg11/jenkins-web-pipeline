@@ -1,0 +1,15 @@
+apiVersion: 1
+
+datasources:
+  - name: MySQL
+    type: mysql
+    uid: mysql_uid
+    access: proxy
+    isDefault: true
+    database: app_db
+    user: projeto
+    secureJsonData:
+      password: projeto
+    url: db:3307
+    jsonData:
+      tlsSkipVerify: true
