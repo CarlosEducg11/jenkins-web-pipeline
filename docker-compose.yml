@@ -7,11 +7,6 @@ services:
     depends_on:
       - db
 
-  r-cleaner:
-    image: educg11/r-cleaner:latest
-    depends_on:
-      - python-generator
-
   db:
     image: mysql:8.0
     container_name: db
@@ -27,27 +22,6 @@ services:
       - db_data:/var/lib/mysql
       - ./db-init:/docker-entrypoint-initdb.d
 
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: 'admin'
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./grafana/data:/var/lib/grafana          # persistence
-      - ./grafana/provisioning:/etc/grafana/provisioning  # provisioning files
-      - ./grafana/dashboards:/var/lib/grafana/dashboards  # dashboard JSON files
-    depends_on:
-      - r-cleaner
-
-  git-clone:
-    image: alpine/git
-    volumes:
-      - ./PI:/repo
-    command: ["git", "clone", "https://github.com/CarlosEducg11/jenkins-web-pipeline.git", "/repo"]
-    depends_on:
-      - python-generator
 
 volumes:
   db_data:

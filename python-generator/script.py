@@ -17,7 +17,7 @@ solos = ['Arenoso', 'Arenoso', 'Arenoso', 'Argiloso', 'Argiloso', 'Humífero',
          'arenoso', 'ARENOSO', 'arenoso', 'argiloso', 'ARGILOSO', 'humifero']
 notas = ['Queimada Recente', 'Historicamente alagavel', 'Mare alta']
 
-for idRio in range(20):
+for idRio in range(10):
     mediaVazao = round(random.triangular(2000, 200000, 5000))
 
     if random.random() < 0.05:
