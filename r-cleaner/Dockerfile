@@ -24,4 +24,4 @@ COPY wait-for-mysql.sh .
 RUN chmod +x wait-for-mysql.sh
 
 # Start with wait script
-CMD ["wait-for-mysql.sh", "db", "Rscript", "dadosAlagamento.R"]
+CMD ["./wait-for-mysql.sh", "Rscript", "dadosAlagamento.R"]
