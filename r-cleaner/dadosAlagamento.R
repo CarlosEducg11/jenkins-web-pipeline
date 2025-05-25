@@ -20,6 +20,25 @@ dados <- dbReadTable(con, "dados_alagamento")
 head(dados)
 summary(dados)
 
+# Show incomplete Solo entries
+dados[!complete.cases(dados$Solo),]
+
+# Fix outlier Temperaturas
+medianaTemperatura <- median(dados[dados$Temperatura > -6 & dados$Temperatura < 41, ]$Temperatura, na.rm = TRUE)
+dados[dados$Temperatura < -6 | dados$Temperatura > 41, ]$Temperatura <- medianaTemperatura
+
+# Fix outlier Vazao.atual
+medianaVazao <- median(dados[dados$Vazao.atual > 999 & dados$Vazao.atual < 400001, ]$Vazao.atual, na.rm = TRUE)
+dados[dados$Vazao.atual < 999 | dados$Vazao.atual > 400001, ]$Vazao.atual <- medianaVazao
+
+# Normalize Solo values
+dados$Solo <- tolower(dados$Solo)
+dados$Solo[dados$Solo == "humifero"] <- "Humífero"
+dados$Solo[dados$Solo == "arenoso"] <- "Arenoso"
+dados$Solo[dados$Solo == "argiloso"] <- "Argiloso"
+dados$Solo[is.na(dados$Solo)] <- "Arenoso"
+dados$Solo <- factor(dados$Solo)
+
 # Save data as-is to a new table (drop if exists)
 if ("rios_corrigidos" %in% dbListTables(con)) {
   dbRemoveTable(con, "rios_corrigidos")
