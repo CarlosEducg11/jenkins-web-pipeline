@@ -1,11 +1,15 @@
 version: "3.9"
 
 services:
-  python-generator:
-    image: educg11/python-generator:latest
-    command: ["python", "script.py"]
+  r-cleaner:
+    image: educg11/r-cleaner:latest
     depends_on:
       - db
+    environment:
+      DB_HOST: db
+      MYSQL_DATABASE: app_db
+      MYSQL_USER: projeto
+      MYSQL_PASSWORD: projeto
 
   db:
     image: mysql:8.0
@@ -21,7 +25,6 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./db-init:/docker-entrypoint-initdb.d
-
 
 volumes:
   db_data:

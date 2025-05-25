@@ -7,7 +7,7 @@ con <- dbConnect(
   RMySQL::MySQL(),
   dbname = "app_db",
   host = "db",
-  port = 3307,
+  port = 3306,
   user = "projeto",
   password = "projeto"
 )

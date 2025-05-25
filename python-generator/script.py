@@ -1,13 +1,25 @@
 import random
 import mysql.connector
+import time
+from mysql.connector import Error
 
-# Database connection
-conn = mysql.connector.connect(
-    host="db",           # Name of the MySQL container in docker-compose
-    user="projeto",
-    password="projeto",
-    database="app_db"
-)
+for i in range(10):
+    try:
+        conn = mysql.connector.connect(
+            host="db",
+            user="projeto",
+            password="projeto",
+            database="app_db",
+            port=3306
+        )
+        print("Connected to DB!")
+        break
+    except Error as e:
+        print(f"Retrying DB connection ({i+1}/10): {e}")
+        time.sleep(3)
+else:
+    print("Failed to connect to DB after retries.")
+
 cursor = conn.cursor()
 
 # Data generation

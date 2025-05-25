@@ -10,6 +10,6 @@ datasources:
     user: projeto
     secureJsonData:
       password: projeto
-    url: db:3308
+    url: db:3306
     jsonData:
       tlsSkipVerify: true
