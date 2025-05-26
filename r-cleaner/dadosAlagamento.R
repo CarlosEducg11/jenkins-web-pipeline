@@ -24,9 +24,6 @@ colnames(dados) = c("vazaoMedia","vazaoAtual","milimitroHora","milimitroDia","mi
 #Cria csv com dados tratados
 write.csv(dados,"dadosCorretosPI.csv",row.names = TRUE)
 
-
-
-
 last_mtime <- file.info("data/dadosAlagamentoPI.csv")$mtime
 print("Entrando em Loop")
 repeat {

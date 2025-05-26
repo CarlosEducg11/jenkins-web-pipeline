@@ -2,7 +2,8 @@ FROM jenkins/jenkins:lts
 
 USER root
 
-RUN apt-get update && apt-get install -y docker.io docker-compose
+# Install git, docker, docker-compose
+RUN apt-get update && apt-get install -y git docker.io docker-compose
 
 ARG DOCKER_GID=1001
 

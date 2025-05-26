@@ -1,6 +1,10 @@
+import os
 import csv
 import random
 import time
+
+from tempfile import NamedTemporaryFile
+import shutil
 
 idRio = 0 #Identificador do rio, servindo como nome
 mediaVazao = 0 #Vazão media/padrão do rio mediada em m3/s
@@ -98,10 +102,16 @@ for idRio in range(10):
     data.insert(idRio+1,datatemp)
     print(datatemp)
 
-with open('data/dadosAlagamentoPI.csv', 'w', newline='') as csvfile:
-    print('Escrito')
-    writer = csv.writer(csvfile)
-    writer.writerows(data)
+def atomic_write_csv(data, filename):
+    dir_name = os.path.dirname(filename)
+    with NamedTemporaryFile(mode='w', delete=False, dir=dir_name, newline='') as tmpfile:
+        writer = csv.writer(tmpfile)
+        writer.writerows(data)
+        temp_name = tmpfile.name
+    shutil.move(temp_name, filename)
+    print('Escrito (atomic)')
+
+atomic_write_csv(data, 'data/dadosAlagamentoPI.csv')
 
 while True:
     print('Dormindo (zzz)')
@@ -176,7 +186,4 @@ while True:
         data.insert(idRio+1,datatemp)
         print(datatemp)
 
-    with open('data/dadosAlagamentoPI.csv', 'w', newline='') as csvfile:
-        print('Escrito')
-        writer = csv.writer(csvfile)
-        writer.writerows(data)
+    atomic_write_csv(data, 'data/dadosAlagamentoPI.csv')

@@ -1,13 +1,6 @@
 version: "3.9"
 
 services:
-  r-cleaner:
-    image: educg11/r-cleaner:latest
-    depends_on:
-      - python-generator
-    volumes:
-      - ./data:/app/data
-
   python-generator:
     image: educg11/python-generator:latest
     command: ["python", "script.py"]
