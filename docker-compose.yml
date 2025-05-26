@@ -5,35 +5,14 @@ services:
     image: educg11/r-cleaner:latest
     depends_on:
       - python-generator
-    environment:
-      DB_HOST: db
-      MYSQL_DATABASE: app_db
-      MYSQL_USER: projeto
-      MYSQL_PASSWORD: projeto
     volumes:
       - ./data:/app/data
 
   python-generator:
     image: educg11/python-generator:latest
     command: ["python", "script.py"]
-    depends_on:
-      - db
-
-  db:
-    image: mysql:8.0
-    container_name: db
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: app_db
-      MYSQL_USER: projeto
-      MYSQL_PASSWORD: projeto
-    command: --local-infile=1
-    ports:
-      - "3308:3306"
     volumes:
-      - db_data:/var/lib/mysql
-      - ./db-init:/docker-entrypoint-initdb.d
+      - ./data:/app/data
 
   git-clone:
     image: alpine/git

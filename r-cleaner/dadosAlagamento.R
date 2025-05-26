@@ -1,58 +1,71 @@
-# Load necessary packages
-library(DBI)
-library(RMySQL)
+dados = read.csv("data/dadosAlagamentoPI.csv", sep=",", na.strings = "", stringsAsFactors = T)
 
-# Connect to MySQL database
-con <- dbConnect(
-  RMySQL::MySQL(),
-  dbname = "app_db",
-  host = "db",
-  port = 3306,
-  user = "projeto",
-  password = "projeto",
-  client.flag = 131072
-)
+#Tratamento temperatura
+medianaTemperatura = median(dados[dados$Temperatura>-6|dados$Temperatura<41,]$Temperatura)
+dados[dados$Temperatura< (-6)|dados$Temperatura>41,]$Temperatura = medianaTemperatura
 
-# Read data from the original table
-dados <- dbReadTable(con, "dados_alagamento")
+#Tratamento vazão
+dados <- subset(dados,Vazao.atual < Vazao.Media*2)
 
-# Show some basic info (optional)
-head(dados)
-summary(dados)
+#Tratamento solo
+dados$Solo[dados$Solo == "arenoso" | dados$Solo == "ARENOSO"] = "Arenoso"
+dados$Solo[dados$Solo == "argiloso" | dados$Solo =="ARGILOSO"] = "Argiloso"
+dados$Solo[dados$Solo=="humifero"] = "Humífero"
+dados$Solo[is.na(dados$Solo)]="Arenoso"
+dados$Solo = factor(dados$Solo)
 
-# Show incomplete Solo entries
-dados[!complete.cases(dados$Solo),]
+#Tratamento ID e index
+dados <- dados[,-1]
+row.names(dados) <- NULL
 
-# Fix outlier Temperaturas
-medianaTemperatura <- median(dados[dados$Temperatura > -6 & dados$Temperatura < 41, ]$Temperatura, na.rm = TRUE)
-dados[dados$Temperatura < -6 | dados$Temperatura > 41, ]$Temperatura <- medianaTemperatura
+#Tratamento Colunas
+colnames(dados) = c("vazaoMedia","vazaoAtual","milimitroHora","milimitroDia","milimitroSeteDias","temperatura","velocidadeVento","costa","cidade","vegetacao","montanha","solo","notas","alagou")
 
-# Fix outlier Vazao.atual
-medianaVazao <- median(dados[dados$Vazao.atual > 999 & dados$Vazao.atual < 400001, ]$Vazao.atual, na.rm = TRUE)
-dados[dados$Vazao.atual < 999 | dados$Vazao.atual > 400001, ]$Vazao.atual <- medianaVazao
+#Cria csv com dados tratados
+write.csv(dados,"dadosCorretosPI.csv",row.names = TRUE)
 
-# Normalize Solo values
-dados$Solo <- tolower(dados$Solo)
-dados$Solo[dados$Solo == "humifero"] <- "Humífero"
-dados$Solo[dados$Solo == "arenoso"] <- "Arenoso"
-dados$Solo[dados$Solo == "argiloso"] <- "Argiloso"
-dados$Solo[is.na(dados$Solo)] <- "Arenoso"
-dados$Solo <- factor(dados$Solo)
 
-# Save data as-is to a new table (drop if exists)
-if ("rios_corrigidos" %in% dbListTables(con)) {
-  dbRemoveTable(con, "rios_corrigidos")
+
+
+last_mtime <- file.info("data/dadosAlagamentoPI.csv")$mtime
+print("Entrando em Loop")
+repeat {
+  print("Loop")
+  atual_mtime <- file.info("data/dadosAlagamentoPI.csv")$mtime
+  
+  if (atual_mtime != last_mtime) {
+    print("Dados divergentes, re-tratando")
+    # Recarrega o arquivo inteiro ou parte dele
+    dados = read.csv("dadosAlagamentoPI.csv", sep=",", na.strings = "", stringsAsFactors = T)
+    
+    #Tratamento temperatura
+    medianaTemperatura = median(dados[dados$Temperatura>-6|dados$Temperatura<41,]$Temperatura)
+    dados[dados$Temperatura< (-6)|dados$Temperatura>41,]$Temperatura = medianaTemperatura
+    
+    #Tratamento vazão
+    dados <- subset(dados,Vazao.atual < Vazao.Media*2)
+    
+    #Tratamento solo
+    dados$Solo[dados$Solo == "arenoso" | dados$Solo == "ARENOSO"] = "Arenoso"
+    dados$Solo[dados$Solo == "argiloso" | dados$Solo =="ARGILOSO"] = "Argiloso"
+    dados$Solo[dados$Solo=="humifero"] = "Humífero"
+    dados$Solo[is.na(dados$Solo)]="Arenoso"
+    dados$Solo = factor(dados$Solo)
+    
+    #Tratamento ID e index
+    dados <- dados[,-1]
+    row.names(dados) <- NULL
+    
+    #Tratamento Colunas
+    colnames(dados) = c("vazaoMedia","vazaoAtual","milimitroHora","milimitroDia","milimitroSeteDias","temperatura","velocidadeVento","costa","cidade","vegetacao","montanha","solo","notas","alagou")
+    
+    #Cria csv com dados tratados
+    write.csv(dados, "data/dadosCorretosPI.csv",row.names = TRUE)
+    print("Dados divergentes tratados")
+    
+    # Atualiza o tempo da última modificação
+    last_mtime <- atual_mtime
+  }
+  
+  Sys.sleep(5)  # Checa a cada 10 segundos
 }
-
-# Export to CSV in ./data folder
-dir.create("./data", showWarnings = FALSE)
-write.csv(dados, "./data/dadosCorretosPI.csv", row.names = FALSE)
-cat("✔️ Tabela 'rios_corrigidos' gravada com sucesso no banco MySQL!\n")
-cat("✔️ CSV saved to ./data/rios_corrigidos.csv\n")
-
-dbWriteTable(con, "rios_corrigidos", dados, row.names = FALSE, bulk = FALSE)
-
-# Disconnect
-dbDisconnect(con)
-
-cat("✔️ Tabela 'rios_corrigidos' gravada com sucesso no banco MySQL!\n")
