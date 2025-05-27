@@ -7,6 +7,19 @@ services:
     volumes:
       - ./data:/app/data
 
+  dash-app:
+    build: ./dash-app
+    ports:
+      - "8050:8050"
+    volumes:
+      - ./data:/app/data
+    command: python3 dash_app.py
+
+  r-cleaner:
+    image: educg11/r-cleaner:latest
+    depends_on:
+      - python-generator
+      
   git-clone:
     image: alpine/git
     volumes:
