@@ -8,6 +8,27 @@ services:
     volumes:
       - ./data:/app/data
     command: python3 dash_app.py    
+
+  r-cleaner:
+    image: educg11/r-cleaner:latest
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - python-generator
+
+  python-generator:
+    image: educg11/python-generator:latest
+    volumes:
+      - ./data:/app/data
+    command: ["python", "script.py"]
+
+  git-clone:
+    image: alpine/git
+    volumes:
+      - ./PI:/repo
+    command: ["git", "clone", "https://github.com/CarlosEducg11/jenkins-web-pipeline.git", "/repo"]
+    depends_on:
+      - python-generator
       
 volumes:
   db_data:
