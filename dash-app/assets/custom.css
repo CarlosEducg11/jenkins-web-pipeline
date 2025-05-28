@@ -1,0 +1,21 @@
+/* Style for NavLink */
+.nav-link {
+    color: #495057 !important;
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Hover effect */
+.nav-link:hover {
+    background-color: #E0E4FF !important;
+    color: #495057 !important;
+}
+
+/* Active tab */
+.nav-link.active {
+    background-color: #E0E4FF !important;
+    color: #495057 !important;
+    font-weight: bold;
+}

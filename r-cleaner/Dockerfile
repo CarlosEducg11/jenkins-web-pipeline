@@ -8,6 +8,8 @@ RUN apt-get update && apt-get install -y \
     netcat \
     && apt-get clean
 
+RUN R -e "install.packages(c('filelock'), repos='https://cloud.r-project.org')"
+
 # Set working directory
 WORKDIR /app
 

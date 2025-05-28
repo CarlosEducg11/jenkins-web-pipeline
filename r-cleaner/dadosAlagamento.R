@@ -1,68 +1,63 @@
-dados = read.csv("data/dadosAlagamentoPI.csv", sep=",", na.strings = "", stringsAsFactors = T)
+library(filelock)
 
-#Tratamento temperatura
-medianaTemperatura = median(dados[dados$Temperatura>-6|dados$Temperatura<41,]$Temperatura)
-dados[dados$Temperatura< (-6)|dados$Temperatura>41,]$Temperatura = medianaTemperatura
-
-#Tratamento vazão
-dados <- subset(dados,Vazao.atual < Vazao.Media*2)
-
-#Tratamento solo
-dados$Solo[dados$Solo == "arenoso" | dados$Solo == "ARENOSO"] = "Arenoso"
-dados$Solo[dados$Solo == "argiloso" | dados$Solo =="ARGILOSO"] = "Argiloso"
-dados$Solo[dados$Solo=="humifero"] = "Humífero"
-dados$Solo[is.na(dados$Solo)]="Arenoso"
-dados$Solo = factor(dados$Solo)
-
-#Tratamento ID e index
-dados <- dados[,-1]
-row.names(dados) <- NULL
-
-#Tratamento Colunas
-colnames(dados) = c("vazaoMedia","vazaoAtual","milimitroHora","milimitroDia","milimitroSeteDias","temperatura","velocidadeVento","costa","cidade","vegetacao","montanha","solo","notas","alagou")
-
-#Cria csv com dados tratados
-write.csv(dados,"dadosCorretosPI.csv",row.names = TRUE)
-
-last_mtime <- file.info("data/dadosAlagamentoPI.csv")$mtime
 print("Entrando em Loop")
 repeat {
   print("Loop")
-  atual_mtime <- file.info("data/dadosAlagamentoPI.csv")$mtime
-  
-  if (atual_mtime != last_mtime) {
-    print("Dados divergentes, re-tratando")
-    # Recarrega o arquivo inteiro ou parte dele
-    dados = read.csv("dadosAlagamentoPI.csv", sep=",", na.strings = "", stringsAsFactors = T)
-    
-    #Tratamento temperatura
-    medianaTemperatura = median(dados[dados$Temperatura>-6|dados$Temperatura<41,]$Temperatura)
-    dados[dados$Temperatura< (-6)|dados$Temperatura>41,]$Temperatura = medianaTemperatura
-    
-    #Tratamento vazão
-    dados <- subset(dados,Vazao.atual < Vazao.Media*2)
-    
-    #Tratamento solo
-    dados$Solo[dados$Solo == "arenoso" | dados$Solo == "ARENOSO"] = "Arenoso"
-    dados$Solo[dados$Solo == "argiloso" | dados$Solo =="ARGILOSO"] = "Argiloso"
-    dados$Solo[dados$Solo=="humifero"] = "Humífero"
-    dados$Solo[is.na(dados$Solo)]="Arenoso"
-    dados$Solo = factor(dados$Solo)
-    
-    #Tratamento ID e index
-    dados <- dados[,-1]
-    row.names(dados) <- NULL
-    
-    #Tratamento Colunas
-    colnames(dados) = c("vazaoMedia","vazaoAtual","milimitroHora","milimitroDia","milimitroSeteDias","temperatura","velocidadeVento","costa","cidade","vegetacao","montanha","solo","notas","alagou")
-    
-    #Cria csv com dados tratados
-    write.csv(dados, "data/dadosCorretosPI.csv",row.names = TRUE)
-    print("Dados divergentes tratados")
-    
-    # Atualiza o tempo da última modificação
-    last_mtime <- atual_mtime
+
+  # Aguarda até o arquivo existir
+  while (!file.exists("data/dadosAlagamentoPI.csv")) {
+    print("Arquivo ainda não criado. Aguardando...")
+    Sys.sleep(1)
   }
-  
-  Sys.sleep(5)  # Checa a cada 10 segundos
+
+  # Tenta obter lock exclusivo
+  lock_path <- "data/dadosAlagamentoPI.csv.lock"
+  lock <- filelock::lock(lock_path, timeout = 5000)
+
+  if (!is.null(lock)) {
+    atual_mtime <- file.info("data/dadosAlagamentoPI.csv")$mtime
+
+    if (!exists("last_mtime") || atual_mtime != last_mtime) {
+      print("Dados divergentes, re-tratando")
+
+      # Carrega e trata dados
+      dados <- read.csv("data/dadosAlagamentoPI.csv", sep=",", na.strings = "", stringsAsFactors = T)
+      
+      # Tratamento temperatura
+      medianaTemperatura <- median(dados[dados$Temperatura > -6 & dados$Temperatura < 41, ]$Temperatura, na.rm = TRUE)
+      dados$Temperatura[dados$Temperatura < -6 | dados$Temperatura > 41] <- medianaTemperatura
+      
+      # Tratamento vazão
+      dados <- subset(dados, Vazao.atual < Vazao.Media * 2)
+
+      # Tratamento solo
+      dados$Solo <- tolower(dados$Solo)
+      dados$Solo[dados$Solo == "arenoso"] <- "Arenoso"
+      dados$Solo[dados$Solo == "argiloso"] <- "Argiloso"
+      dados$Solo[dados$Solo == "humifero"] <- "Humífero"
+      dados$Solo[is.na(dados$Solo)] <- "Arenoso"
+      dados$Solo <- factor(dados$Solo)
+
+      # ID e index
+      dados <- dados[, -1]
+      row.names(dados) <- NULL
+
+      # Renomeia colunas
+      colnames(dados) <- c("vazaoMedia","vazaoAtual","milimitroHora","milimitroDia","milimitroSeteDias",
+                           "temperatura","velocidadeVento","costa","cidade","vegetacao",
+                           "montanha","solo","notas","alagou")
+
+      write.csv(dados, "data/dadosCorretosPI.csv", row.names = TRUE)
+
+      print("Dados divergentes tratados")
+      last_mtime <- atual_mtime
+    }
+
+    # Libera o lock
+    unlock(lock)
+  } else {
+    print("Arquivo está em uso por outro processo. Tentando novamente...")
+  }
+
+  Sys.sleep(5)
 }
