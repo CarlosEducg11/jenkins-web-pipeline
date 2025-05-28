@@ -1,26 +1,13 @@
 version: "3.9"
 
 services:
-  python-generator:
-    image: educg11/python-generator:latest
-    command: ["python", "script.py"]
+  dash-app:
+    build: ./dash-app
+    ports:
+      - "8050:8050"
     volumes:
       - ./data:/app/data
-
-  r-cleaner:
-    image: educg11/r-cleaner:latest
-    volumes:
-      - ./data:/app/data
-    depends_on:
-      - python-generator
+    command: python3 dash_app.py    
       
-  git-clone:
-    image: alpine/git
-    volumes:
-      - ./PI:/repo
-    command: ["git", "clone", "https://github.com/CarlosEducg11/jenkins-web-pipeline.git", "/repo"]
-    depends_on:
-      - python-generator
-
 volumes:
   db_data:

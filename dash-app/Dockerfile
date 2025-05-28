@@ -23,5 +23,5 @@ COPY . .
 # Expose the port your Dash app runs on
 EXPOSE 8050
 
-# Run the Dash app
-CMD ["python", "app.py"]
+# Run modelos.py first, then app.py
+CMD python analise/modelos.py && python dash_app.py

@@ -53,7 +53,7 @@ data = [['ID', 'Vazao Media', 'Vazao atual', 'Milimitro hora', 'Milimitro do dia
          'Costa', 'Cidade', 'Vegetacao', 'Montanha', 'Solo', 'Notas','Alagou']]
 
 # Primeira geração
-for idRio in range(10):
+for idRio in range(1000):
     mediaVazao = round(random.triangular(2000, 200000, 5000))
     if random.random() < 0.05:
         vazao = round(random.triangular(mediaVazao*50, mediaVazao*200, mediaVazao*100))
@@ -110,9 +110,9 @@ while True:
     time.sleep(10)
 
     acquire_lock()
-    data = data[:1]  # Mantém apenas o cabeçalho
+    #data = data[:1]  # Mantém apenas o cabeçalho
 
-    for idRio in range(10):
+    for idRio in range(1000):
         mediaVazao = round(random.triangular(2000, 200000, 5000))
         if random.random() < 0.05:
             vazao = round(random.triangular(mediaVazao*50, mediaVazao*200, mediaVazao*100))
