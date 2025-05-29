@@ -3,3 +3,8 @@ dash
 dash-bootstrap-components
 scikit-learn
 plotly
+networkx
+matplotlib
+numpy
+seaborn
+scikit-learn

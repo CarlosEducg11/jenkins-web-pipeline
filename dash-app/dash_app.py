@@ -1,12 +1,12 @@
+import os
 import pandas as pd
 from dash import Dash, html, Input, Output, callback_context, dcc
 import dash_bootstrap_components as dbc
-import os
 
-from pages.home import render as render_home
-from pages.dados import render as render_dados
+from pages.datalake import render as render_home
+from pages.spark import render as render_dados
 from pages.modelos import render as render_modelos
-from pages.config import render as render_config
+from pages.hadoop import render as render_config
 
 # Custom colors
 sidebar_bg = "#f8f9fa"
@@ -42,7 +42,6 @@ def navlink_with_logo(text, href, id_, logo, active=False):
         className="custom-nav-link"
     )
 
-# Fixed sidebar definition
 # Fixed sidebar definition
 sidebar = html.Div(
     [
@@ -126,24 +125,56 @@ sidebar = html.Div(
     className="bg-white",
 )
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+# --- Pre-render all pages ONCE here ---
 
-# Layout with fixed sidebar and scrollable content
+page_home = render_home()
+page_dados = render_dados()
+page_modelos = render_modelos()
+page_config = render_config()
+
+pages = {
+    'home-link': page_home,
+    'dados-link': page_dados,
+    'modelos-link': page_modelos,
+    'config-link': page_config,
+}
+
+app = Dash(
+    __name__,
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    suppress_callback_exceptions=True
+)
+
+# Layout: all pages hidden except home by default
 app.layout = html.Div([
     sidebar,
-    html.Div(
-        id='tab-content',
-        style={
-            'marginLeft': '180px',  # Sidebar width
-            'padding': '20px',
-            'overflowY': 'auto',
-            'height': '100vh',
-        }
+    dcc.Loading(
+        id="loading-tab-content",
+        type="circle",
+        children=html.Div(
+            id='tab-content',
+            children=[
+                html.Div(pages['home-link'], id='page-home-link', style={'display': 'block'}),
+                html.Div(pages['dados-link'], id='page-dados-link', style={'display': 'none'}),
+                html.Div(pages['modelos-link'], id='page-modelos-link', style={'display': 'none'}),
+                html.Div(pages['config-link'], id='page-config-link', style={'display': 'none'}),
+            ],
+            style={
+                'marginLeft': '180px',
+                'padding': '20px',
+                'overflowY': 'auto',
+                'height': '100vh',
+            }
+        ),
+        style={'marginLeft': '180px', 'height': '100vh', 'overflowY': 'auto'}
     )
 ])
 
 @app.callback(
-    Output('tab-content', 'children'),
+    Output('page-home-link', 'style'),
+    Output('page-dados-link', 'style'),
+    Output('page-modelos-link', 'style'),
+    Output('page-config-link', 'style'),
     Output('home-link', 'active'),
     Output('dados-link', 'active'),
     Output('modelos-link', 'active'),
@@ -153,29 +184,44 @@ app.layout = html.Div([
     Input('modelos-link', 'n_clicks'),
     Input('config-link', 'n_clicks'),
 )
-def render_tab_content(home, dados, modelos, config):
+def toggle_pages(home, dados, modelos, config):
     ctx = callback_context
     tab_id = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else 'home-link'
 
-    return {
-        'home-link': (render_home(), True, False, False, False),
-        'dados-link': (render_dados(), False, True, False, False),
-        'modelos-link': (render_modelos(), False, False, True, False),
-        'config-link': (render_config(), False, False, False, True),
-    }[tab_id]
+    visible_styles = {
+        'home-link': (
+            {'display': 'block'}, {'display': 'none'}, {'display': 'none'}, {'display': 'none'},
+            True, False, False, False
+        ),
+        'dados-link': (
+            {'display': 'none'}, {'display': 'block'}, {'display': 'none'}, {'display': 'none'},
+            False, True, False, False
+        ),
+        'modelos-link': (
+            {'display': 'none'}, {'display': 'none'}, {'display': 'block'}, {'display': 'none'},
+            False, False, True, False
+        ),
+        'config-link': (
+            {'display': 'none'}, {'display': 'none'}, {'display': 'none'}, {'display': 'block'},
+            False, False, False, True
+        ),
+    }
+
+    return visible_styles.get(tab_id, visible_styles['home-link'])
+
 
 @app.callback(
     Output('total-rows-text', 'children'),
     Input('interval-refresh', 'n_intervals')
 )
 def update_total_rows(n):
-    file_path = 'data/dadosCorretosPI.csv'
+    file_path = 'assets/dadosCorretosPI.csv'
     
     if os.path.exists(file_path):
         try:
             df = pd.read_csv(file_path, sep=',', encoding='latin-1')
             return str(len(df))
-        except Exception as e:
+        except Exception:
             return "Error"
     else:
         return "5000"
