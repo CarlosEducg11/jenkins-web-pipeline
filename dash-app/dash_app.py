@@ -3,20 +3,10 @@ import pandas as pd
 from dash import Dash, html, Input, Output, callback_context, dcc
 import dash_bootstrap_components as dbc
 
-from pages.datalake import render as render_home
-from pages.spark import render as render_dados
-from pages.modelos import render as render_modelos
-from pages.hadoop import render as render_config
-
-# Custom colors
+# Sidebar colors and icons
 sidebar_bg = "#f8f9fa"
 text_color = "#495057"
-hover_color = "#e9ecef"
-active_bg_color = "#7f8996"
-active_text_color = "white"
-clicked_color = "#bac3cc"
 
-# Sidebar with logo image instead of icons
 logo_home = '/assets/icons/data-lake.png'
 logo_dados = '/assets/icons/rating.png'
 logo_modelos = '/assets/icons/bar-chart.png'
@@ -42,71 +32,38 @@ def navlink_with_logo(text, href, id_, logo, active=False):
         className="custom-nav-link"
     )
 
-# Fixed sidebar definition
 sidebar = html.Div(
     [
-        # Logo + Divider
         html.Div(
             [
-                html.Img(
-                    src='/assets/icons/ocean.gif',
-                    style={'width': '80px', 'marginBottom': '0.5rem'}
-                ),
-                html.Hr(    
-                    style={
-                        'borderTop': '3px solid #444444',
-                        'margin': '0.5rem 1rem'
-                    }
-                )
+                html.Img(src='/assets/icons/ocean.gif', style={'width': '80px', 'marginBottom': '0.5rem'}),
+                html.Hr(style={'borderTop': '3px solid #444444', 'margin': '0.5rem 1rem'})
             ],
             style={'textAlign': 'center'}
         ),
 
-        # Navigation Links
         navlink_with_logo("Datalake", "#home", "home-link", logo_home, active=True),
         navlink_with_logo("Spark", "#dados", "dados-link", logo_dados),
         navlink_with_logo("Modelos", "#modelos", "modelos-link", logo_modelos),
         navlink_with_logo("Hadoop", "#config", "config-link", logo_config),
 
-        # Total Rows Counter + Divider at Bottom
         html.Div(
             [
-                html.Hr(
-                    style={
-                        'borderTop': '3px solid #444444',
-                        'margin': '0 1rem 0.5rem 1rem'
-                    }
-                ),
+                html.Hr(style={'borderTop': '3px solid #444444', 'margin': '0 1rem 0.5rem 1rem'}),
                 html.Div(
                     [
-                        html.Img(src='/assets/icons/table.png', style={
-                            'width': '40px',
-                            'height': '40px',
-                            'marginRight': '5px'
-                        }),
+                        html.Img(src='/assets/icons/table.png', style={'width': '40px', 'height': '40px', 'marginRight': '5px'}),
                         html.Span(id='total-rows-text', style={
-                            'fontWeight': 'bold',
-                            'fontSize': '1.8rem',
-                            'color': text_color,
+                            'fontWeight': 'bold', 'fontSize': '1.8rem', 'color': text_color,
                         }),
                     ],
-                    style={
-                        'display': 'flex',
-                        'justifyContent': 'center',
-                        'alignItems': 'center',
-                        'gap': '7px',
-                    }
+                    style={'display': 'flex', 'justifyContent': 'center', 'alignItems': 'center', 'gap': '7px'}
                 )
             ],
-            style={
-                'padding': '1rem',
-                'marginTop': 'auto',
-                'userSelect': 'none',
-            }
+            style={'padding': '1rem', 'marginTop': 'auto', 'userSelect': 'none'}
         ),
 
-        # Auto-refresh Interval
-        dcc.Interval(id='interval-refresh', interval=1000, n_intervals=0)
+        dcc.Interval(id='interval-refresh', interval=30*1000, n_intervals=0),
     ],
     style={
         "position": "fixed",
@@ -125,27 +82,8 @@ sidebar = html.Div(
     className="bg-white",
 )
 
-# --- Pre-render all pages ONCE here ---
+app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
 
-page_home = render_home()
-page_dados = render_dados()
-page_modelos = render_modelos()
-page_config = render_config()
-
-pages = {
-    'home-link': page_home,
-    'dados-link': page_dados,
-    'modelos-link': page_modelos,
-    'config-link': page_config,
-}
-
-app = Dash(
-    __name__,
-    external_stylesheets=[dbc.themes.BOOTSTRAP],
-    suppress_callback_exceptions=True
-)
-
-# Layout: all pages hidden except home by default
 app.layout = html.Div([
     sidebar,
     dcc.Loading(
@@ -153,12 +91,6 @@ app.layout = html.Div([
         type="circle",
         children=html.Div(
             id='tab-content',
-            children=[
-                html.Div(pages['home-link'], id='page-home-link', style={'display': 'block'}),
-                html.Div(pages['dados-link'], id='page-dados-link', style={'display': 'none'}),
-                html.Div(pages['modelos-link'], id='page-modelos-link', style={'display': 'none'}),
-                html.Div(pages['config-link'], id='page-config-link', style={'display': 'none'}),
-            ],
             style={
                 'marginLeft': '180px',
                 'padding': '20px',
@@ -171,52 +103,69 @@ app.layout = html.Div([
 ])
 
 @app.callback(
-    Output('page-home-link', 'style'),
-    Output('page-dados-link', 'style'),
-    Output('page-modelos-link', 'style'),
-    Output('page-config-link', 'style'),
+    Output('tab-content', 'children'),
     Output('home-link', 'active'),
     Output('dados-link', 'active'),
     Output('modelos-link', 'active'),
     Output('config-link', 'active'),
+    Input('interval-refresh', 'n_intervals'),
     Input('home-link', 'n_clicks'),
     Input('dados-link', 'n_clicks'),
     Input('modelos-link', 'n_clicks'),
     Input('config-link', 'n_clicks'),
 )
-def toggle_pages(home, dados, modelos, config):
+def update_page_content(n_intervals, home_clicks, dados_clicks, modelos_clicks, config_clicks):
     ctx = callback_context
-    tab_id = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else 'home-link'
+    triggered_id = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else 'home-link'
 
-    visible_styles = {
-        'home-link': (
-            {'display': 'block'}, {'display': 'none'}, {'display': 'none'}, {'display': 'none'},
-            True, False, False, False
-        ),
-        'dados-link': (
-            {'display': 'none'}, {'display': 'block'}, {'display': 'none'}, {'display': 'none'},
-            False, True, False, False
-        ),
-        'modelos-link': (
-            {'display': 'none'}, {'display': 'none'}, {'display': 'block'}, {'display': 'none'},
-            False, False, True, False
-        ),
-        'config-link': (
-            {'display': 'none'}, {'display': 'none'}, {'display': 'none'}, {'display': 'block'},
-            False, False, False, True
-        ),
+    # Determine active tab based on last clicked link or default to home
+    # If interval triggers, keep last active tab or default home
+    # Track clicks counts to determine last clicked tab
+    clicks = {
+        'home-link': home_clicks or 0,
+        'dados-link': dados_clicks or 0,
+        'modelos-link': modelos_clicks or 0,
+        'config-link': config_clicks or 0
     }
 
-    return visible_styles.get(tab_id, visible_styles['home-link'])
+    # Find the tab with max clicks — assume last clicked
+    max_clicked = max(clicks.values())
+    active_tabs = [tab for tab, count in clicks.items() if count == max_clicked]
 
+    # If multiple tie or no clicks yet, fallback to home
+    active_tab = active_tabs[0] if active_tabs else 'home-link'
+
+    # Load page dynamically (import inside to avoid circular imports)
+    if active_tab == 'home-link':
+        from pages.datalake import render as render_home
+        content = render_home()
+    elif active_tab == 'dados-link':
+        from pages.spark import render as render_dados
+        content = render_dados()
+    elif active_tab == 'modelos-link':
+        from pages.modelos import render as render_modelos
+        content = render_modelos()
+    elif active_tab == 'config-link':
+        from pages.hadoop import render as render_config
+        content = render_config()
+    else:
+        content = html.Div("Page not found")
+
+    # Set active states for navlinks
+    return (
+        content,
+        active_tab == 'home-link',
+        active_tab == 'dados-link',
+        active_tab == 'modelos-link',
+        active_tab == 'config-link',
+    )
 
 @app.callback(
     Output('total-rows-text', 'children'),
     Input('interval-refresh', 'n_intervals')
 )
 def update_total_rows(n):
-    file_path = 'assets/dadosCorretosPI.csv'
-    
+    file_path = 'data/dadosCorretosPI.csv'
     if os.path.exists(file_path):
         try:
             df = pd.read_csv(file_path, sep=',', encoding='latin-1')
@@ -224,7 +173,7 @@ def update_total_rows(n):
         except Exception:
             return "Error"
     else:
-        return "5000"
+        return "0"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8050, debug=True)

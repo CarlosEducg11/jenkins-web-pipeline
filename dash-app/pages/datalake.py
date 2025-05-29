@@ -6,6 +6,12 @@ import pandas as pd
 import plotly.express as px
 from dash import html, dcc, Input, Output, callback
 
+def render():
+    return html.Div([
+        html.H3("Dados"),
+        html.P("Aqui você pode mostrar tabelas, filtros e visualizações relacionadas a dados."),
+])
+'''
 CSV_PATH = 'assets/dadosCorretosPI.csv'
 DATALAKE_PATH = 'assets/datalake'
 DW_PATH = 'assets/datawarehouse.db'
@@ -106,4 +112,4 @@ def register_callbacks(app):
         fig.update_layout(title=f'Consulta OLAP: {dim1}' + (f' e {dim2}' if col2 else ''),
                           xaxis_title=dim1,
                           yaxis_title='Média Vazão')
-        return fig
+        return fig'''

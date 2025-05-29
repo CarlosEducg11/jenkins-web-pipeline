@@ -1,14 +1,6 @@
 version: "3.9"
 
 services:
-  dash-app:
-    build: ./dash-app
-    ports:
-      - "8050:8050"
-    volumes:
-      - ./data:/app/data
-    command: python3 dash_app.py    
-
   r-cleaner:
     image: educg11/r-cleaner:latest
     volumes:
@@ -22,13 +14,15 @@ services:
       - ./data:/app/data
     command: ["python", "script.py"]
 
-  git-clone:
-    image: alpine/git
+  dash-app:
+    build: ./dash-app
+    ports:
+      - "8050:8050"
     volumes:
-      - ./PI:/repo
-    command: ["git", "clone", "https://github.com/CarlosEducg11/jenkins-web-pipeline.git", "/repo"]
+      - ./data:/app/data
     depends_on:
-      - python-generator
+      - r-cleaner
+    command: python3 dash_app.py 
       
 volumes:
   db_data:

@@ -1,8 +1,6 @@
 from dash import html, dcc, dash_table
-
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
@@ -12,37 +10,39 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score, confusion_matrix,
-                             classification_report, silhouette_score, davies_bouldin_score)
+from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score, f1_score, confusion_matrix,
+    classification_report
+)
 
-# Load your dataset
-df = pd.read_csv('assets/dadosCorretosPI.csv', sep=',', encoding='latin-1')
+def render():
+    # Load data fresh each render
+    df = pd.read_csv('data/dadosCorretosPI.csv', sep=',', encoding='latin-1')
 
-# ----------------- Preprocessing Setup ------------------
-X = df.drop(columns=['Unnamed: 0', 'alagou'], axis=1)
-y = df['alagou']
+    # Prepare features and target
+    X = df.drop(columns=['Unnamed: 0', 'alagou'], errors='ignore')
+    y = df['alagou']
 
-numeric_features = X.select_dtypes(include=['int64', 'float64']).columns
-categorical_features = X.select_dtypes(include=['object', 'category']).columns
+    numeric_features = X.select_dtypes(include=['int64', 'float64']).columns
+    categorical_features = X.select_dtypes(include=['object', 'category']).columns
 
-numeric_transformer = Pipeline([
-    ('imputer', SimpleImputer(strategy='median')),
-    ('scaler', StandardScaler())
-])
+    numeric_transformer = Pipeline([
+        ('imputer', SimpleImputer(strategy='median')),
+        ('scaler', StandardScaler())
+    ])
 
-categorical_transformer = Pipeline([
-    ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
-    ('onehot', OneHotEncoder(handle_unknown='ignore'))
-])
+    categorical_transformer = Pipeline([
+        ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
+        ('onehot', OneHotEncoder(handle_unknown='ignore'))
+    ])
 
-preprocessor = ColumnTransformer([
-    ('num', numeric_transformer, numeric_features),
-    ('cat', categorical_transformer, categorical_features)
-])
+    preprocessor = ColumnTransformer([
+        ('num', numeric_transformer, numeric_features),
+        ('cat', categorical_transformer, categorical_features)
+    ])
 
-# ----------------- Components ------------------
-def create_table():
-    return dash_table.DataTable(
+    # Data Table component
+    table = dash_table.DataTable(
         columns=[{"name": col, "id": col} for col in df.columns],
         data=df.tail(20).to_dict("records"),
         style_table={'overflowX': 'auto'},
@@ -50,7 +50,7 @@ def create_table():
         style_header={'backgroundColor': 'lightgrey', 'fontWeight': 'bold'}
     )
 
-def create_confusion_matrix():
+    # Confusion matrix and metrics
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=69)
     pipeline = Pipeline([
         ('preprocessor', preprocessor),
@@ -65,81 +65,79 @@ def create_confusion_matrix():
     rec = recall_score(y_test, y_pred, average="macro")
     f1 = f1_score(y_test, y_pred, average="macro")
 
-    fig = px.imshow(cm, text_auto=True, x=['Pred: 0', 'Pred: 1'], y=['True: 0', 'True: 1'],
-                    color_continuous_scale='Blues', title="Matriz de Confusão")
-    fig.update_layout(margin=dict(t=40, l=0, r=0, b=0))
-    return dcc.Graph(figure=fig), f"Acurácia: {acc:.2f} | Precisão: {prec:.2f} | Recall: {rec:.2f} | F1-Score: {f1:.2f}"
+    conf_fig = px.imshow(cm, text_auto=True,
+                        x=['Pred: 0', 'Pred: 1'],
+                        y=['True: 0', 'True: 1'],
+                        color_continuous_scale='Blues',
+                        title="Matriz de Confusão")
+    conf_fig.update_layout(margin=dict(t=40, l=0, r=0, b=0))
+    conf_metrics = f"Acurácia: {acc:.2f} | Precisão: {prec:.2f} | Recall: {rec:.2f} | F1-Score: {f1:.2f}"
 
-def create_cluster_plot():
+    conf_graph = dcc.Graph(figure=conf_fig)
+
+    # Cluster plot using PCA + KMeans
     x_preprocessed = preprocessor.fit_transform(X)
-    model = KMeans(n_clusters=2, random_state=69).fit(x_preprocessed)
-    labels = model.predict(x_preprocessed)
+    kmeans = KMeans(n_clusters=2, random_state=69).fit(x_preprocessed)
+    labels = kmeans.predict(x_preprocessed)
     pca = PCA(n_components=2)
     x_pca = pca.fit_transform(x_preprocessed)
 
     df_pca = pd.DataFrame(x_pca, columns=['PCA1', 'PCA2'])
-    df_pca['Cluster'] = labels
+    df_pca['Cluster'] = labels.astype(str)
 
-    fig = px.scatter(df_pca, x='PCA1', y='PCA2', color=df_pca['Cluster'].astype(str),
-                     title='Clusterização com PCA (KMeans)',
-                     labels={'Cluster': 'Cluster'})
-    fig.update_traces(marker=dict(size=8, opacity=0.6))
-    return dcc.Graph(figure=fig)
+    cluster_fig = px.scatter(df_pca, x='PCA1', y='PCA2', color='Cluster',
+                             title='Clusterização com PCA (KMeans)')
+    cluster_fig.update_traces(marker=dict(size=8, opacity=0.6))
+    cluster_graph = dcc.Graph(figure=cluster_fig)
 
-def create_text_report():
-    df['texto'] = df['vazaoMedia'].astype(str) + ' ' + df['vazaoAtual'].astype(str) + ' ' + df['milimitroHora'].astype(str) + ' ' + df['milimitroDia'].astype(str)
-    x_train, x_test, y_train, y_test = train_test_split(df['texto'], df['alagou'], test_size=0.2, random_state=69, stratify=df['alagou'])
-    pipeline = Pipeline([
+    # Text report for TF-IDF classification
+    df_text = df.copy()
+    df_text['texto'] = (
+        df_text['vazaoMedia'].astype(str) + ' ' +
+        df_text['vazaoAtual'].astype(str) + ' ' +
+        df_text['milimitroHora'].astype(str) + ' ' +
+        df_text['milimitroDia'].astype(str)
+    )
+
+    x_train, x_test, y_train, y_test = train_test_split(
+        df_text['texto'], df_text['alagou'], test_size=0.2, random_state=69, stratify=df_text['alagou'])
+
+    pipeline_text = Pipeline([
         ('tfidf', TfidfVectorizer(ngram_range=(1, 2), max_df=0.8, min_df=1)),
         ('classifier', RandomForestClassifier(n_estimators=100, random_state=69))
     ])
-    pipeline.fit(x_train, y_train)
-    y_pred = pipeline.predict(x_test)
+    pipeline_text.fit(x_train, y_train)
+    y_pred_text = pipeline_text.predict(x_test)
 
-    report = classification_report(y_test, y_pred)
-    acc = accuracy_score(y_test, y_pred)
-    return html.Pre(f"Relatório de Classificação\n\n{report}\nAcurácia: {acc:.2f}",
-                    style={'whiteSpace': 'pre-wrap', 'fontFamily': 'monospace'})
+    report = classification_report(y_test, y_pred_text)
+    acc_text = accuracy_score(y_test, y_pred_text)
 
-# ----------------- Page Renderer ------------------
-def render_section(title, description, content_component):
+    text_report = html.Pre(
+        f"Relatório de Classificação\n\n{report}\nAcurácia: {acc_text:.2f}",
+        style={'whiteSpace': 'pre-wrap', 'fontFamily': 'monospace'}
+    )
+
+    # Helper to create nicely styled sections
+    def render_section(title, description, content_component):
+        return html.Div([
+            html.H3(title, style={'marginBottom': '10px'}),
+            html.P(description, style={'marginBottom': '20px'}),
+            content_component
+        ], style={
+            'backgroundColor': '#f9f9f9',
+            'padding': '30px',
+            'marginBottom': '40px',
+            'borderRadius': '10px',
+            'boxShadow': '0 2px 4px rgba(0, 0, 0, 0.05)',
+            'textAlign': 'center',
+            'maxWidth': '1000px',
+            'marginLeft': 'auto',
+            'marginRight': 'auto'
+        })
+
     return html.Div([
-        html.H3(title, style={'marginBottom': '10px'}),
-        html.P(description, style={'marginBottom': '20px'}),
-        content_component  # Instead of static image, pass Graph or Text here
-    ], style={
-        'backgroundColor': '#f9f9f9',
-        'padding': '30px',
-        'marginBottom': '40px',
-        'borderRadius': '10px',
-        'boxShadow': '0 2px 4px rgba(0, 0, 0, 0.05)',
-        'textAlign': 'center',
-        'maxWidth': '1000px',
-        'marginLeft': 'auto',
-        'marginRight': 'auto'
-    })
-
-def render():
-    conf_graph, conf_metrics = create_confusion_matrix()
-    return html.Div([
-        render_section(
-            "📊 Tabela de Dados",
-            "Visualização das últimas 20 linhas.",
-            create_table()
-        ),
-        render_section(
-            "📉 Matriz de Confusão",
-            conf_metrics,
-            conf_graph
-        ),
-        render_section(
-            "🔍 Gráfico de Clusters",
-            "Visualização dos clusters gerados pelo algoritmo.",
-            create_cluster_plot()
-        ),
-        render_section(
-            "📈 Relatório de Texto",
-            "Relatório do modelo de classificação baseado em TF-IDF.",
-            create_text_report()
-        )
+        render_section("📊 Tabela de Dados", "Visualização das últimas 20 linhas.", table),
+        render_section("📉 Matriz de Confusão", conf_metrics, conf_graph),
+        render_section("🔍 Gráfico de Clusters", "Visualização dos clusters gerados pelo algoritmo.", cluster_graph),
+        render_section("📈 Relatório de Texto", "Relatório do modelo de classificação baseado em TF-IDF.", text_report)
     ], style={'padding': '60px', 'maxWidth': '1200px', 'margin': '0 auto'})
