@@ -52,11 +52,5 @@ pipeline {
                 sh 'docker-compose down'
             }
         }
-
-        stage('Archive Artifacts') {
-            steps {
-                archiveArtifacts 'data/dadosCorretosPI.csv'
-            }
-        }
     }
 }

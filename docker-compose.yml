@@ -23,6 +23,14 @@ services:
     depends_on:
       - r-cleaner
     command: python3 dash_app.py 
-      
+
+  git-clone:
+    image: alpine/git
+    volumes:
+      - ./PI:/repo
+    command: ["git", "clone", "https://github.com/CarlosEducg11/jenkins-web-pipeline.git", "/repo"]
+    depends_on:
+      - python-generator
+         
 volumes:
   db_data:

@@ -1,14 +1,8 @@
 import pandas as pd
 from dash import html, dcc, dash_table
 
-def render():
-    return html.Div([
-        html.H3("Dados"),
-        html.P("Aqui você pode mostrar tabelas, filtros e visualizações relacionadas a dados."),
-])
-'''
 def simulate_hadoop():
-    df = pd.read_csv('assets/dadosCorretosPI.csv', sep=',', encoding='latin-1')
+    df = pd.read_csv('data/dadosCorretosPI.csv', sep=',', encoding='latin-1')
 
     # --- MapReduce ---
     def mapper(linhas):
@@ -99,4 +93,4 @@ def render():
             style_table={'overflowX': 'auto'},
             page_size=10
         ),
-    ], style={"padding": "30px"})'''
+    ], style={"padding": "30px"}) 

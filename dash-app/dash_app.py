@@ -49,7 +49,43 @@ sidebar = html.Div(
 
         html.Div(
             [
+                dbc.Button(
+                    [
+                        html.Img(
+                            src="/assets/icons/refresh.png",
+                            style={
+                                "height": "18px",
+                                "width": "18px",
+                                "marginRight": "8px"
+                            }
+                        ),
+                        "Refresh"
+                    ],
+                    id="refresh-button",
+                    color="light",  # Bootstrap fallback
+                    size="md",
+                    style={
+                        'width': '100%',
+                        'marginBottom': '15px',
+                        'borderRadius': '8px',
+                        'backgroundColor': '#555555',  # Light gray in HEX
+                        'border': '1px solid #888',
+                        'boxShadow': '0 2px 4px rgba(0,0,0,0.08)',
+                        'fontWeight': '700',
+                        'fontSize': '1rem',
+                        'fontFamily': 'Segoe UI, Roboto, sans-serif',
+                        'color': '#ffffff',  # White text
+                        'cursor': 'pointer',
+                        'display': 'flex',
+                        'alignItems': 'center',
+                        'justifyContent': 'center',
+                        'gap': '6px',
+                        'transition': 'background-color 0.2s ease-in-out',
+                    }
+                ),
+
                 html.Hr(style={'borderTop': '3px solid #444444', 'margin': '0 1rem 0.5rem 1rem'}),
+
                 html.Div(
                     [
                         html.Img(src='/assets/icons/table.png', style={'width': '40px', 'height': '40px', 'marginRight': '5px'}),
@@ -62,8 +98,6 @@ sidebar = html.Div(
             ],
             style={'padding': '1rem', 'marginTop': 'auto', 'userSelect': 'none'}
         ),
-
-        dcc.Interval(id='interval-refresh', interval=30*1000, n_intervals=0),
     ],
     style={
         "position": "fixed",
@@ -102,25 +136,23 @@ app.layout = html.Div([
     )
 ])
 
+# Page content and navlink states — also triggered by refresh button
 @app.callback(
     Output('tab-content', 'children'),
     Output('home-link', 'active'),
     Output('dados-link', 'active'),
     Output('modelos-link', 'active'),
     Output('config-link', 'active'),
-    Input('interval-refresh', 'n_intervals'),
     Input('home-link', 'n_clicks'),
     Input('dados-link', 'n_clicks'),
     Input('modelos-link', 'n_clicks'),
     Input('config-link', 'n_clicks'),
+    Input('refresh-button', 'n_clicks')  # <- added refresh here
 )
-def update_page_content(n_intervals, home_clicks, dados_clicks, modelos_clicks, config_clicks):
+def update_page_content(home_clicks, dados_clicks, modelos_clicks, config_clicks, refresh_clicks):
     ctx = callback_context
     triggered_id = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else 'home-link'
 
-    # Determine active tab based on last clicked link or default to home
-    # If interval triggers, keep last active tab or default home
-    # Track clicks counts to determine last clicked tab
     clicks = {
         'home-link': home_clicks or 0,
         'dados-link': dados_clicks or 0,
@@ -128,14 +160,11 @@ def update_page_content(n_intervals, home_clicks, dados_clicks, modelos_clicks, 
         'config-link': config_clicks or 0
     }
 
-    # Find the tab with max clicks — assume last clicked
+    # Find active tab based on last clicked or fallback to home
     max_clicked = max(clicks.values())
     active_tabs = [tab for tab, count in clicks.items() if count == max_clicked]
-
-    # If multiple tie or no clicks yet, fallback to home
     active_tab = active_tabs[0] if active_tabs else 'home-link'
 
-    # Load page dynamically (import inside to avoid circular imports)
     if active_tab == 'home-link':
         from pages.datalake import render as render_home
         content = render_home()
@@ -151,7 +180,6 @@ def update_page_content(n_intervals, home_clicks, dados_clicks, modelos_clicks, 
     else:
         content = html.Div("Page not found")
 
-    # Set active states for navlinks
     return (
         content,
         active_tab == 'home-link',
@@ -160,11 +188,13 @@ def update_page_content(n_intervals, home_clicks, dados_clicks, modelos_clicks, 
         active_tab == 'config-link',
     )
 
+# Manual refresh of total rows via refresh button
 @app.callback(
     Output('total-rows-text', 'children'),
-    Input('interval-refresh', 'n_intervals')
+    Input('refresh-button', 'n_clicks'),
+    prevent_initial_call=True
 )
-def update_total_rows(n):
+def update_total_rows(n_clicks):
     file_path = 'data/dadosCorretosPI.csv'
     if os.path.exists(file_path):
         try:

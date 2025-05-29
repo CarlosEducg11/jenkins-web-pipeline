@@ -19,3 +19,8 @@
     color: #495057 !important;
     font-weight: bold;
 }
+
+.refresh-btn:hover {
+    background-color: #0056b3 !important; /* Darker primary blue */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+}

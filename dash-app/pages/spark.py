@@ -10,16 +10,13 @@ from pyspark.sql.functions import col
 from pyspark.sql.types import StringType
 
 def render():
-    return html.Div([
-        html.H3("Dados"),
-        html.P("Aqui você pode mostrar tabelas, filtros e visualizações relacionadas a dados."),
-])
+    return html.H3("Spark...")
 
 '''
 def run_spark_model():
     spark = SparkSession.builder.appName("ModeloAlagamento").master("local[*]").getOrCreate()
 
-    df = spark.read.csv('assets/dadosCorretosPI.csv', header=True, inferSchema=True)
+    df = spark.read.csv('data/dadosCorretosPI.csv', header=True, inferSchema=True)
 
     features = ['vazaoMedia', 'vazaoAtual', 'milimitroHora', 'milimitroDia',
                 'milimitroSeteDias', 'temperatura', 'velocidadeVento']
@@ -76,4 +73,4 @@ def render():
             "borderCollapse": "collapse",
             "marginTop": "20px"
         })
-    ], style={"padding": "30px", "maxWidth": "1000px", "margin": "0 auto"})'''
+    ], style={"padding": "30px", "maxWidth": "1000px", "margin": "0 auto"}) '''
