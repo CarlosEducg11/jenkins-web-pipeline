@@ -14,19 +14,6 @@ services:
       - ./data:/app/data
     command: ["python", "script.py"]
 
-<<<<<<< HEAD
-  r-cleaner:
-    image: educg11/r-cleaner:latest
-<<<<<<< HEAD
-=======
-    depends_on:
-      - python-generator
->>>>>>> b4de054 (a)
-    volumes:
-      - ./data:/app/data
-    depends_on:
-      - python-generator
-=======
   dash-app:
     build: ./dash-app
     ports:
@@ -100,35 +87,7 @@ services:
       - dash-app # Ou os serviços que você quer que ele monitore desde o início
       - python-generator
       - r-cleaner
->>>>>>> 1a39fbc (a)
 
-<<<<<<< HEAD
-  python-generator:
-    image: educg11/python-generator:latest
-    volumes:
-      - ./data:/app/data
-    command: ["python", "script.py"]
-
-  dash-app:
-    build: ./dash-app
-    ports:
-      - "8050:8050"
-    volumes:
-      - ./data:/app/data
-    depends_on:
-      - r-cleaner
-    command: python3 dash_app.py 
-
-  git-clone:
-    image: alpine/git
-    volumes:
-      - ./PI:/repo
-    command: ["git", "clone", "https://github.com/CarlosEducg11/jenkins-web-pipeline.git", "/repo"]
-    depends_on:
-      - python-generator
-         
-=======
->>>>>>> b4de054 (a)
 volumes:
   db_data: #
   grafana-data:
