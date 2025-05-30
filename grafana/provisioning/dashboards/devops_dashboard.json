@@ -1,0 +1,46 @@
+
+{
+    "__inputs": [],
+    "__requires": [],
+    "annotations": {"list": []},
+    "editable": true,
+    "gnetId": null,
+    "graphTooltip": 0,
+    "id": null, 
+    "links": [],
+    "panels": [
+      {
+        "datasource": {"type": "prometheus", "uid": "Prometheus_DevOps"}, 
+        "title": "Duração do Job Python Generator",
+        "type": "stat",
+        "targets": [{"expr": "job_duration_seconds{job='python_generator'}"}],
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 0}
+      },
+      {
+        "datasource": {"type": "prometheus", "uid": "Prometheus_DevOps"},
+        "title": "Uso de CPU do Contêiner (Ex: dash-app)",
+        "type": "timeseries",
+        "targets": [{"expr": "sum(rate(container_cpu_usage_seconds_total{container_label_com_docker_compose_service='dash-app'}[1m])) by (container_label_com_docker_compose_service) * 100"}],
+        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 0}
+      },
+      {
+        "datasource": {"type": "prometheus", "uid": "Prometheus_DevOps"},
+        "title": "Memória Usada do Contêiner (Ex: dash-app)",
+        "type": "timeseries",
+        "targets": [{"expr": "container_memory_usage_bytes{container_label_com_docker_compose_service='dash-app'}"}],
+        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 0}
+      }
+
+    ],
+    "refresh": "15s",
+    "schemaVersion": 36,
+    "style": "dark",
+    "tags": ["devops", "prometheus"],
+    "templating": {"list": []},
+    "time": {"from": "now-1h", "to": "now"},
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "Dashboard de Métricas DevOps",
+    "uid": "devops-metrics-dashboard", 
+    "version": 1
+  }

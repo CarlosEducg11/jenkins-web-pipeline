@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 1a39fbc (a)
 library(filelock)
 
 print("Entrando em Loop")
@@ -61,6 +64,7 @@ repeat {
   }
 
   Sys.sleep(5)
+<<<<<<< HEAD
 =======
 csv_path <- "data/dadosAlagamentoPI.csv"
 last_mtime <- NULL
@@ -146,4 +150,6 @@ repeat {
 
   Sys.sleep(15)
 >>>>>>> b4de054 (a)
+=======
+>>>>>>> 1a39fbc (a)
 }

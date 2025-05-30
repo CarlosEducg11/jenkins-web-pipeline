@@ -1,0 +1,12 @@
+# grafana/provisioning/dashboards/devops_dashboard_provider.yml
+apiVersion: 1
+
+providers:
+  - name: 'DevOps Dashboards' # Nome da pasta de dashboards no Grafana
+    orgId: 1
+    folder: 'DevOps Metrics'   # Nome da pasta na UI do Grafana
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards/devops # Caminho DENTRO do contêiner Grafana

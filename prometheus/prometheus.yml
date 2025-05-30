@@ -1,0 +1,21 @@
+# prometheus/prometheus.yml
+global:
+  scrape_interval: 15s # Intervalo padrão para raspar métricas
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'pushgateway'
+    static_configs:
+      - targets: ['pushgateway:9091'] # Nome do serviço no Docker Compose
+
+  - job_name: 'dash_app'
+    static_configs:
+      - targets: ['dash-app:8050'] # Assumindo que o dash-app exporá métricas nesta porta.
+                                    # O Prometheus Flask Exporter geralmente usa a porta principal da app.
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080'] # Porta padrão do cAdvisor

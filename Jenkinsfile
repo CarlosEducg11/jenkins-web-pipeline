@@ -25,20 +25,28 @@ pipeline {
                     sh "docker build -t ${IMAGE_PYTHON}:latest ./python-generator"
                     sh "docker build -t ${IMAGE_R}:latest ./r-cleaner"
 <<<<<<< HEAD
+<<<<<<< HEAD
                     sh "docker build -t ${IMAGE_DASH}:latest ./dash-app"
 =======
                     sh "docker build -t ${IMAGE_GRAFANA}:latest ./grafana"
 >>>>>>> b4de054 (a)
+=======
+                    sh "docker build -t ${IMAGE_DASH}:latest ./dash-app"
+>>>>>>> 1a39fbc (a)
 
                     withCredentials([usernamePassword(credentialsId: 'token2', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
                         sh "docker push ${IMAGE_PYTHON}:latest"
                         sh "docker push ${IMAGE_R}:latest"
 <<<<<<< HEAD
+<<<<<<< HEAD
                         sh "docker push ${IMAGE_DASH}:latest"
 =======
                         sh "docker push ${IMAGE_GRAFANA}:latest"
 >>>>>>> b4de054 (a)
+=======
+                        sh "docker push ${IMAGE_DASH}:latest"
+>>>>>>> 1a39fbc (a)
                     }
 
                 }

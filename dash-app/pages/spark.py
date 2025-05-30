@@ -9,10 +9,7 @@ from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from pyspark.sql.functions import col
 from pyspark.sql.types import StringType
 
-def render():
-    return html.H3("Spark...")
 
-'''
 def run_spark_model():
     spark = SparkSession.builder.appName("ModeloAlagamento").master("local[*]").getOrCreate()
 
@@ -73,4 +70,4 @@ def render():
             "borderCollapse": "collapse",
             "marginTop": "20px"
         })
-    ], style={"padding": "30px", "maxWidth": "1000px", "margin": "0 auto"}) '''
+    ], style={"padding": "30px", "maxWidth": "1000px", "margin": "0 auto"}) 

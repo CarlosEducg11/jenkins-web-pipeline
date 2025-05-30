@@ -1,12 +1,20 @@
 version: "3.9"
 
 services:
+  r-cleaner:
+    image: educg11/r-cleaner:latest
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - python-generator
+
   python-generator:
     image: educg11/python-generator:latest
     volumes:
-      - ./data:/app/data  
+      - ./data:/app/data
     command: ["python", "script.py"]
 
+<<<<<<< HEAD
   r-cleaner:
     image: educg11/r-cleaner:latest
 <<<<<<< HEAD
@@ -18,6 +26,81 @@ services:
       - ./data:/app/data
     depends_on:
       - python-generator
+=======
+  dash-app:
+    build: ./dash-app
+    ports:
+      - "8050:8050"
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - r-cleaner
+    command: python3 dash_app.py 
+
+  git-clone:
+    image: alpine/git
+    volumes:
+      - ./PI:/repo
+    command: ["git", "clone", "https://github.com/CarlosEducg11/jenkins-web-pipeline.git", "/repo"]
+    depends_on:
+      - python-generator
+         
+  grafana:
+    build: ./grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=yesoreyeram-infinity-datasource # Mantém o plugin CSV/Infinity
+    volumes:
+      - ./grafana-data:/var/lib/grafana
+      # Monta a pasta de dashboards para o provider do DevOps e outros que você adicionar
+      - ./grafana/provisioning/dashboards:/var/lib/grafana/dashboards/devops 
+      - ./data:/csv-data:ro
+    depends_on:
+      - prometheus # Grafana precisa do Prometheus
+      - r-cleaner
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus:/etc/prometheus # Monta o diretório de configuração
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    depends_on:
+      - pushgateway
+      - dash-app
+      - cadvisor # Prometheus precisa que seus alvos estejam disponíveis
+
+  pushgateway:
+    image: prom/pushgateway:latest
+    container_name: pushgateway
+    ports:
+      - "9091:9091"
+
+  # NOVO SERVIÇO: cAdvisor para métricas de contêineres
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "8080:8080" # Porta da UI do cAdvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true # Necessário para acesso a informações do host
+    depends_on:
+      - dash-app # Ou os serviços que você quer que ele monitore desde o início
+      - python-generator
+      - r-cleaner
+>>>>>>> 1a39fbc (a)
 
 <<<<<<< HEAD
   python-generator:
@@ -47,4 +130,5 @@ services:
 =======
 >>>>>>> b4de054 (a)
 volumes:
-  db_data:
+  db_data: #
+  grafana-data:

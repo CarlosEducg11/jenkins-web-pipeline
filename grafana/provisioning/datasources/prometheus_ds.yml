@@ -1,0 +1,12 @@
+# grafana/provisioning/datasources/prometheus_ds.yml
+apiVersion: 1
+
+datasources:
+  - name: Prometheus_DevOps
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090 # Nome do serviço Prometheus no Docker Compose
+    isDefault: false # Pode ser true se este for seu DS principal para métricas
+    jsonData:
+      timeInterval: "15s"
+    editable: true
