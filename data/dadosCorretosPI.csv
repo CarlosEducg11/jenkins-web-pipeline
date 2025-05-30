@@ -1,4 +1,5 @@
 "","vazaoMedia","vazaoAtual","milimitroHora","milimitroDia","milimitroSeteDias","temperatura","velocidadeVento","costa","cidade","vegetacao","montanha","solo","notas","alagou"
+<<<<<<< HEAD
 "1",163684,175696,0,15,428,25,26,"False","True","True","False","Humífero",NA,"True"
 "2",35152,35741,18,35,304,38,24,"False","True","True","False","Arenoso",NA,"False"
 "3",7823,11346,39,5,257,19,51,"True","False","False","False","Arenoso",NA,"False"
@@ -382,3 +383,15 @@
 "381",30714,28475,0,48,7,23,24,"True","True","False","False","Arenoso",NA,"False"
 "382",5928,6331,0,39,54,18,16,"True","True","False","False","Arenoso",NA,"False"
 "383",55356,90466,0,60,133,23,15,"False","False","False","False","Arenoso",NA,"True"
+=======
+"1",95760,83450,0,75,259,20,14,"True","False","True","False","Arenoso",NA,"False"
+"2",73863,130115,0,30,36,22,21,"False","True","False","False","Argiloso",NA,"True"
+"3",23440,18975,0,51,315,18,29,"True","False","False","False","Arenoso",NA,"False"
+"4",14123,12720,0,81,152,9,12,"False","False","False","True","Argiloso",NA,"False"
+"5",47546,42017,19,24,64,16,44,"False","False","True","True","Argiloso",NA,"False"
+"6",47585,54885,0,26,71,20.5,7,"True","False","True","False","Arenoso","Queimada Recente","False"
+"7",144726,168009,6,9,39,26,12,"False","False","False","True","Arenoso",NA,"False"
+"8",25057,19484,53,64,134,21,41,"False","False","True","True","Argiloso",NA,"False"
+"9",128213,75626,7,1,36,22,29,"False","False","True","False","Arenoso",NA,"False"
+"10",47029,69690,5,18,173,14,5,"False","False","True","False","Arenoso",NA,"False"
+>>>>>>> b4de054 (a)

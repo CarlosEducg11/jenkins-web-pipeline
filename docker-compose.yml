@@ -1,13 +1,25 @@
 version: "3.9"
 
 services:
+  python-generator:
+    image: educg11/python-generator:latest
+    volumes:
+      - ./data:/app/data  
+    command: ["python", "script.py"]
+
   r-cleaner:
     image: educg11/r-cleaner:latest
+<<<<<<< HEAD
+=======
+    depends_on:
+      - python-generator
+>>>>>>> b4de054 (a)
     volumes:
       - ./data:/app/data
     depends_on:
       - python-generator
 
+<<<<<<< HEAD
   python-generator:
     image: educg11/python-generator:latest
     volumes:
@@ -32,5 +44,7 @@ services:
     depends_on:
       - python-generator
          
+=======
+>>>>>>> b4de054 (a)
 volumes:
   db_data:

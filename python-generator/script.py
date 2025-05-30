@@ -58,9 +58,13 @@ for idRio in range(100):
     if random.random() < 0.05:
         vazao = round(random.triangular(mediaVazao*50, mediaVazao*200, mediaVazao*100))
     else:
-        vazao = round(random.triangular(mediaVazao/2, mediaVazao*2, mediaVazao))
+        vazao = round(random.triangular(mediaVazao/2, mediaVazao*2, mediaVazao)) #Gera a vazão atual do rio baseando na vazão media
 
-    miliHora = round(random.triangular(0, 65, 5)) if random.random() < 0.5 else 0
+    if random.random() < 0.5: #50 porcento de chance de estar chovendo
+        miliHora = round(random.triangular(0, 65, 5))
+    else:
+        miliHora = 0
+
     miliDia = round(random.triangular(0, 100, 0))
     mili7 = round(random.triangular(0, 500, 4))
     temp = round(random.triangular(70, 500, 300)) if random.random() < 0.05 else round(random.triangular(-5, 40, 24))
