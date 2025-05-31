@@ -59,9 +59,9 @@ def render():
     mapreduce_df, hive_df, pig_df, hbase_df = simulate_hadoop()
 
     return html.Div([
-        html.H2("🛠️ Simulação de Hadoop com Pandas"),
+        html.H2("Simulação de Hadoop com Pandas"),
 
-        html.H4("🧮 MapReduce - Contagem de Tipos de Solo"),
+        html.H4("MapReduce - Contagem de Tipos de Solo"),
         dash_table.DataTable(
             data=mapreduce_df.to_dict('records'),
             columns=[{"name": i, "id": i} for i in mapreduce_df.columns],
@@ -69,7 +69,7 @@ def render():
             page_size=10
         ),
 
-        html.H4("📊 Hive - Vazões Onde a Atual > Média"),
+        html.H4("Hive - Vazões Onde a Atual > Média"),
         dash_table.DataTable(
             data=hive_df.to_dict('records'),
             columns=[{"name": i, "id": i} for i in hive_df.columns],
@@ -77,7 +77,7 @@ def render():
             page_size=10
         ),
 
-        html.H4("🐷 Pig - Vazão Atual Duas Vezes Acima da Média"),
+        html.H4("Pig - Vazão Atual Duas Vezes Acima da Média"),
         html.P(f"Total filtrado: {len(pig_df)} registros"),
         dash_table.DataTable(
             data=pig_df.to_dict('records'),
@@ -86,7 +86,7 @@ def render():
             page_size=10
         ),
 
-        html.H4("🏛️ HBase - Banco Colunar Simulado"),
+        html.H4("HBase - Banco Colunar Simulado"),
         dash_table.DataTable(
             data=hbase_df.head(20).to_dict('records'),
             columns=[{"name": i, "id": i} for i in hbase_df.columns],

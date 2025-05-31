@@ -136,8 +136,8 @@ def render():
         })
 
     return html.Div([
-        render_section("📊 Tabela de Dados", "Visualização das últimas 20 linhas.", table),
-        render_section("📉 Matriz de Confusão", conf_metrics, conf_graph),
-        render_section("🔍 Gráfico de Clusters", "Visualização dos clusters gerados pelo algoritmo.", cluster_graph),
-        render_section("📈 Relatório de Texto", "Relatório do modelo de classificação baseado em TF-IDF.", text_report)
+        render_section("Tabela de Dados", "Visualização das últimas 20 linhas.", table),
+        render_section("Matriz de Confusão", conf_metrics, conf_graph),
+        render_section("Gráfico de Clusters", "Visualização dos clusters gerados pelo algoritmo.", cluster_graph),
+        render_section("Relatório de Texto", "Relatório do modelo de classificação baseado em TF-IDF.", text_report)
     ], style={'padding': '60px', 'maxWidth': '1200px', 'margin': '0 auto'})

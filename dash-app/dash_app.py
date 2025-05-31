@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from dash import Dash, html, Input, Output, callback_context, dcc
+from dash import Dash, html, Input, Output, dcc 
 import dash_bootstrap_components as dbc
 
 # Sidebar colors and icons
@@ -8,19 +8,20 @@ sidebar_bg = "#f8f9fa"
 text_color = "#495057"
 
 logo_home = '/assets/icons/data-lake.png'
-logo_dados = '/assets/icons/rating.png'
+logo_dados = '/assets/icons/rating.png' 
 logo_modelos = '/assets/icons/bar-chart.png'
-logo_config = '/assets/icons/develop.png'
+logo_config = '/assets/icons/develop.png' 
 
-def navlink_with_logo(text, href, id_, logo, active=False):
+# Função para criar NavLinks com ícones
+def navlink_with_logo(text, href, id_name, logo_path):
     return dbc.NavLink(
         [
-            html.Img(src=logo, style={'width': '20px', 'marginRight': '8px'}),
+            html.Img(src=logo_path, style={'width': '20px', 'marginRight': '8px'}),
             text
         ],
-        href=href,
-        id=id_,
-        active=active,
+        href=href,     
+        id=id_name,
+        active="exact", 
         style={
             "fontSize": "0.9rem",
             "color": text_color,
@@ -29,9 +30,10 @@ def navlink_with_logo(text, href, id_, logo, active=False):
             "padding": "0.5rem 1rem",
             "userSelect": "none",
         },
-        className="custom-nav-link"
+        className="custom-nav-link" 
     )
 
+# Definição da Sidebar
 sidebar = html.Div(
     [
         html.Div(
@@ -42,18 +44,20 @@ sidebar = html.Div(
             style={'textAlign': 'center'}
         ),
 
-        navlink_with_logo("Datalake", "#home", "home-link", logo_home, active=True),
-        navlink_with_logo("Spark", "#dados", "dados-link", logo_dados),
-        navlink_with_logo("Modelos", "#modelos", "modelos-link", logo_modelos),
-        navlink_with_logo("Hadoop", "#config", "config-link", logo_config),
+        # NavLinks atualizados para usar caminhos de URL
+        navlink_with_logo("Datalake", "/", "home-link", logo_home),
+        navlink_with_logo("Spark", "/spark", "dados-link", logo_dados),
+        navlink_with_logo("Modelos", "/modelos", "modelos-link", logo_modelos),
+        navlink_with_logo("Hadoop", "/hadoop", "config-link", logo_config),
 
+        # Seção inferior da sidebar (Refresh e Total de Linhas)
         html.Div(
             [
                 dbc.Button(
                     [
                         html.Img(
                             src="/assets/icons/refresh.png",
-                            style={
+                            style={ 
                                 "height": "18px",
                                 "width": "18px",
                                 "marginRight": "8px"
@@ -62,26 +66,9 @@ sidebar = html.Div(
                         "Refresh"
                     ],
                     id="refresh-button",
-                    color="light",  # Bootstrap fallback
+                    color="light", 
                     size="md",
-                    style={
-                        'width': '100%',
-                        'marginBottom': '15px',
-                        'borderRadius': '8px',
-                        'backgroundColor': '#555555',  # Light gray in HEX
-                        'border': '1px solid #888',
-                        'boxShadow': '0 2px 4px rgba(0,0,0,0.08)',
-                        'fontWeight': '700',
-                        'fontSize': '1rem',
-                        'fontFamily': 'Segoe UI, Roboto, sans-serif',
-                        'color': '#ffffff',  # White text
-                        'cursor': 'pointer',
-                        'display': 'flex',
-                        'alignItems': 'center',
-                        'justifyContent': 'center',
-                        'gap': '6px',
-                        'transition': 'background-color 0.2s ease-in-out',
-                    }
+                    className="refresh-button-custom", #
                 ),
 
                 html.Hr(style={'borderTop': '3px solid #444444', 'margin': '0 1rem 0.5rem 1rem'}),
@@ -116,92 +103,74 @@ sidebar = html.Div(
     className="bg-white",
 )
 
+# Inicialização do aplicativo Dash
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
+server = app.server 
 
+# Layout principal do aplicativo
 app.layout = html.Div([
+    dcc.Location(id='url', refresh=False), 
     sidebar,
-    dcc.Loading(
+    dcc.Loading( 
         id="loading-tab-content",
-        type="circle",
+        type="circle", 
         children=html.Div(
             id='tab-content',
             style={
-                'marginLeft': '180px',
+                'marginLeft': '180px', 
                 'padding': '20px',
                 'overflowY': 'auto',
-                'height': '100vh',
+                'height': '100vh',   
             }
         ),
+ 
         style={'marginLeft': '180px', 'height': '100vh', 'overflowY': 'auto'}
     )
 ])
 
-# Page content and navlink states — also triggered by refresh button
+# Callback para atualizar o conteúdo da página com base na URL e no botão de refresh
 @app.callback(
     Output('tab-content', 'children'),
-    Output('home-link', 'active'),
-    Output('dados-link', 'active'),
-    Output('modelos-link', 'active'),
-    Output('config-link', 'active'),
-    Input('home-link', 'n_clicks'),
-    Input('dados-link', 'n_clicks'),
-    Input('modelos-link', 'n_clicks'),
-    Input('config-link', 'n_clicks'),
-    Input('refresh-button', 'n_clicks')  # <- added refresh here
+    Input('url', 'pathname'),             
+    Input('refresh-button', 'n_clicks') 
 )
-def update_page_content(home_clicks, dados_clicks, modelos_clicks, config_clicks, refresh_clicks):
-    ctx = callback_context
-    triggered_id = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else 'home-link'
+def update_page_content(pathname, refresh_clicks):
+    current_path = pathname if pathname else '/'
 
-    clicks = {
-        'home-link': home_clicks or 0,
-        'dados-link': dados_clicks or 0,
-        'modelos-link': modelos_clicks or 0,
-        'config-link': config_clicks or 0
-    }
-
-    # Find active tab based on last clicked or fallback to home
-    max_clicked = max(clicks.values())
-    active_tabs = [tab for tab, count in clicks.items() if count == max_clicked]
-    active_tab = active_tabs[0] if active_tabs else 'home-link'
-
-    if active_tab == 'home-link':
+    if current_path == '/':
         from pages.datalake import render as render_home
         content = render_home()
-    elif active_tab == 'dados-link':
-        from pages.spark import render as render_dados
-        content = render_dados()
-    elif active_tab == 'modelos-link':
+    elif current_path == '/spark':
+        from pages.spark import render as render_spark
+        content = render_spark()
+    elif current_path == '/modelos':
         from pages.modelos import render as render_modelos
         content = render_modelos()
-    elif active_tab == 'config-link':
-        from pages.hadoop import render as render_config
-        content = render_config()
+    elif current_path == '/hadoop':
+        from pages.hadoop import render as render_hadoop
+        content = render_hadoop()
     else:
-        content = html.Div("Page not found")
+        content = html.Div([
+            html.H1("Página não encontrada (404)"),
+            html.P(f"O caminho '{current_path}' não foi reconhecido.")
+        ])
+    
+    return content
 
-    return (
-        content,
-        active_tab == 'home-link',
-        active_tab == 'dados-link',
-        active_tab == 'modelos-link',
-        active_tab == 'config-link',
-    )
-
-# Manual refresh of total rows via refresh button
+# Callback para atualizar o total de linhas (carrega no início e no refresh)
 @app.callback(
     Output('total-rows-text', 'children'),
-    Input('refresh-button', 'n_clicks'),
-    prevent_initial_call=True
+    Input('refresh-button', 'n_clicks') 
 )
-def update_total_rows(n_clicks):
+def update_total_rows(n_clicks_refresh):
     file_path = 'data/dadosCorretosPI.csv'
     if os.path.exists(file_path):
         try:
             df = pd.read_csv(file_path, sep=',', encoding='latin-1')
             return str(len(df))
-        except Exception:
-            return "Error"
+        except Exception as e:
+            print(f"Erro ao ler o CSV para contagem de linhas: {e}")
+            return "Erro" 
     else:
         return "0"
 

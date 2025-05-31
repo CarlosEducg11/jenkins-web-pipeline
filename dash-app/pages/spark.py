@@ -49,12 +49,12 @@ def render():
                  title="Importância das Características no Modelo")
 
     return html.Div([
-        html.H2("🌩️ Classificação de Alagamentos com Spark"),
+        html.H2("Classificação de Alagamentos com Spark"),
         html.P(f"Acurácia do modelo: {accuracy:.2%}"),
 
         dcc.Graph(figure=fig),
 
-        html.H4("🔍 Exemplo de Previsões"),
+        html.H4("Exemplo de Previsões"),
         html.Table([
             html.Thead([
                 html.Tr([html.Th(col) for col in sample_pred.columns])

@@ -33,22 +33,20 @@ services:
       - python-generator
          
   grafana:
-    build: ./grafana
+    build:
+      context: ./grafana 
     container_name: grafana
     ports:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_INSTALL_PLUGINS=yesoreyeram-infinity-datasource # Mantém o plugin CSV/Infinity
     volumes:
-      - ./grafana-data:/var/lib/grafana
-      # Monta a pasta de dashboards para o provider do DevOps e outros que você adicionar
-      - ./grafana/provisioning/dashboards:/var/lib/grafana/dashboards/devops 
+      - ./grafana-data:/var/lib/grafana 
+
       - ./data:/csv-data:ro
     depends_on:
-      - prometheus # Grafana precisa do Prometheus
-      - r-cleaner
+      - prometheus 
 
   prometheus:
     image: prom/prometheus:latest
@@ -56,38 +54,25 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus:/etc/prometheus # Monta o diretório de configuração
+      - ./prometheus:/etc/prometheus 
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     depends_on:
-      - pushgateway
-      - dash-app
-      - cadvisor # Prometheus precisa que seus alvos estejam disponíveis
+      - cadvisor 
 
-  pushgateway:
-    image: prom/pushgateway:latest
-    container_name: pushgateway
-    ports:
-      - "9091:9091"
-
-  # NOVO SERVIÇO: cAdvisor para métricas de contêineres
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
     ports:
-      - "8080:8080" # Porta da UI do cAdvisor
+      - "8081:8080" 
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
-    privileged: true # Necessário para acesso a informações do host
-    depends_on:
-      - dash-app # Ou os serviços que você quer que ele monitore desde o início
-      - python-generator
-      - r-cleaner
+    privileged: true 
 
 volumes:
-  db_data: #
-  grafana-data:
+  db_data: 
+  grafana-data: 
